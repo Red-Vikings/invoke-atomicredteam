@@ -1,0 +1,1 @@
+python runTechniques.py All
