@@ -6,10 +6,8 @@ $PSDefaultParameterValues = @{"Invoke-AtomicTest:PathToAtomicsFolder"="..\atomic
 if ($techniques.ToUpper() -eq "ALL") {
     Invoke-AtomicTest -AtomicTechnique "All" -Cleanup
 }
-
-$AtomicTests = $techniques
-Get-ChildItem $PathToAtomicsFolder -Recurse -Filter *.yaml -File | ForEach-Object {
-    $currentTechnique = [System.IO.Path]::GetFileNameWithoutExtension($_.FullName)
-    if ( $currentTechnique -ne "index" ) { $AtomicTests.Add($currentTechnique) | Out-Null }
+else{
+    $AtomicTests = $techniques
+    $AtomicTests.GetEnumerator() | Foreach-Object { Invoke-AtomicTest $_ -Cleanup }
 }
-$AtomicTests.GetEnumerator() | Foreach-Object { Invoke-AtomicTest $_ -Cleanup }
+
