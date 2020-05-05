@@ -242,14 +242,15 @@ function Invoke-AtomicTest {
                         Write-KeyValue "Executing test: " $testId
                         $startTime = get-date
                         $final_command = Merge-InputArgs $test.executor.command $test $InputArgs $PathToPayloads
-                        $res = Invoke-ExecuteCommand $final_command $test.executor.name  $TimeoutSeconds $session
+                        $res = Invoke-ExecuteCommand $final_command $test.executor.name  $TimeoutSeconds $session;
                         if ($session) { write-output (Invoke-Command -Session $session -scriptblock { Get-Content $($Using:tmpDir + "art-out.txt"); Get-Content $($Using:tmpDir + "art-err.txt"); Remove-Item $($Using:tmpDir + "art-out.txt"), $($Using:tmpDir + "art-err.txt") -Force -ErrorAction Ignore })}
-                        Write-ExecutionLog $startTime $AT $testCount $test.name $ExecutionLogPath $targetHostname $targetUser
+                        Write-ExecutionLog $startTime $AT $testCount $test.name $ExecutionLogPath $targetHostname $targetUser $res
                         Write-KeyValue "Done executing test: " $testId
                     }
  
                 } # End of foreach Test in single Atomic Technique
             } # End of foreach Technique in Atomic Tests
+			$res
         } # End of Invoke-AtomicTestSingle function
 
         if ($AtomicTechnique -eq "All") {
@@ -260,17 +261,20 @@ function Invoke-AtomicTest {
                     if ( $currentTechnique -ne "index" ) { $AllAtomicTests.Add($currentTechnique) | Out-Null }
                 }
                 $AllAtomicTests.GetEnumerator() | Foreach-Object { Invoke-AtomicTestSingle $_ }
+				$?
             }
         
             if ( ($Force -or $CheckPrereqs -or $ShowDetails -or $ShowDetailsBrief -or $GetPrereqs) -or $psCmdlet.ShouldContinue( 'Do you wish to execute all tests?',
                     "Highway to the danger zone, Executing All Atomic Tests!" ) ) {
-                Invoke-AllTests
+                $res = Invoke-AllTests
             }
         }
         else {
-            Invoke-AtomicTestSingle $AtomicTechnique
+            $res = Invoke-AtomicTestSingle $AtomicTechnique
         }
-
+		$res
     } # End of PROCESS block
+	
     END { } # Intentionally left blank and can be removed
+	
 }
